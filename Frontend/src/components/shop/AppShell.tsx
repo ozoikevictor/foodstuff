@@ -10,6 +10,8 @@ import {
   Menu,
   Package,
   ChevronRight,
+  ChevronDown,
+  LoaderCircle,
 } from "lucide-react";
 import {
   Sheet,
@@ -19,6 +21,14 @@ import {
   SheetDescription,
   SheetClose,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import type { Category } from "@/types";
 import { useApi, useSession } from "@/hooks/use-marketplace";
 import type { ReactNode } from "react";
@@ -62,8 +72,8 @@ export function AppShell({
   const { data: notifications = [] } = useApi<any[]>("/notifications", !!user);
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
-      <header className="sticky top-0 z-40 border-b border-border bg-card/90 backdrop-blur">
-        <div className="mx-auto flex min-h-20 max-w-6xl flex-wrap items-center gap-2 px-3 py-3 md:flex-nowrap md:gap-4 md:px-4">
+      <header className="sticky top-0 z-40 w-full border-b border-border bg-card/95 shadow-sm backdrop-blur">
+        <div className="mx-auto flex min-h-24 w-full max-w-[1600px] flex-wrap items-center gap-3 px-4 py-4 md:gap-5 md:px-6 xl:flex-nowrap xl:px-10">
           <Sheet>
             <SheetTrigger asChild>
               <button
@@ -139,11 +149,14 @@ export function AppShell({
           <Link
             to="/"
             aria-label="NaijaFresh home"
-            className="shrink-0 font-display text-xl font-extrabold text-primary-deep md:text-2xl"
+            className="shrink-0 font-display text-2xl font-extrabold text-primary-deep md:text-3xl"
           >
             Naija<span className="text-hot">Fresh</span>
           </Link>
-          <nav aria-label="Main navigation" className="ml-4 hidden items-center gap-5 lg:flex">
+          <nav
+            aria-label="Main navigation"
+            className="ml-2 hidden shrink-0 items-center gap-6 xl:flex"
+          >
             {nav.slice(0, 3).map((n) => (
               <Link
                 key={n.to}
@@ -159,13 +172,13 @@ export function AppShell({
           <form
             action="/shop"
             role="search"
-            className="order-last flex min-w-0 basis-full items-center gap-2 rounded-lg border border-border bg-background px-3 md:order-none md:ml-auto md:max-w-sm md:flex-1 md:basis-auto"
+            className="order-last flex min-w-0 basis-full items-center gap-2 rounded-2xl border border-border bg-background px-4 xl:order-none xl:ml-auto xl:max-w-xl xl:flex-1 xl:basis-auto"
           >
             <input
               name="q"
               aria-label="Search products"
               placeholder="Search fresh foodstuff"
-              className="h-10 w-full min-w-0 bg-transparent text-sm outline-none"
+              className="h-12 w-full min-w-0 bg-transparent text-sm outline-none"
             />
             <button
               type="submit"
@@ -204,15 +217,6 @@ export function AppShell({
                   </a>
                 )}
                 <Link
-                  to="/account"
-                  aria-label="My account"
-                  title="My account"
-                  className="hidden items-center gap-2 rounded-lg p-2 text-sm font-semibold hover:bg-accent md:flex"
-                >
-                  <User className="size-5" />
-                  <span className="hidden xl:inline">Account</span>
-                </Link>
-                <Link
                   to="/wishlist"
                   aria-label="Wishlist"
                   title="Wishlist"
@@ -234,27 +238,79 @@ export function AppShell({
                   )}
                 </Link>
               </>
-            ) : isGuest ? (
-              <div className="flex items-center gap-1 sm:gap-2">
-                <Link
-                  to="/login"
-                  className="rounded-lg px-2 py-2 text-sm font-semibold text-primary hover:bg-accent"
-                >
-                  Log in
-                </Link>
-                <Link
-                  to="/signup"
-                  className="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary-deep"
-                >
-                  Sign up
-                </Link>
-              </div>
             ) : null}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Open account menu"
+                  className="ml-2 inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-primary/15 bg-accent/60 px-3 text-primary outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  {session.isPending ? (
+                    <LoaderCircle aria-hidden="true" className="size-5 animate-spin" />
+                  ) : (
+                    <User aria-hidden="true" className="size-5" />
+                  )}
+                  <ChevronDown aria-hidden="true" className="size-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" sideOffset={10} className="w-60 rounded-2xl p-2">
+                <DropdownMenuLabel className="px-3 py-3">
+                  {user ? user.name || "Your account" : "Welcome to NaijaFresh"}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {user ? (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link to="/account" className="min-h-11 rounded-xl">
+                        <User />
+                        My account
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/orders" className="min-h-11 rounded-xl">
+                        <Package />
+                        My orders
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/wishlist" className="min-h-11 rounded-xl">
+                        <Heart />
+                        Wishlist
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <>
+                    {session.isPending && (
+                      <p role="status" className="px-3 py-2 text-xs text-muted-foreground">
+                        Checking your account…
+                      </p>
+                    )}
+                    {session.isError && (
+                      <p role="status" className="px-3 py-2 text-xs text-muted-foreground">
+                        We couldn't check your account. You can still open the sign-in page.
+                      </p>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <Link to="/login" className="min-h-11 rounded-xl">
+                        Log in
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/signup" className="min-h-11 rounded-xl">
+                        Create an account
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         <nav
           aria-label="Tablet navigation"
-          className="mx-auto hidden max-w-6xl gap-6 border-t border-border px-4 md:flex lg:hidden"
+          className="mx-auto hidden max-w-[1600px] gap-6 border-t border-border px-6 md:flex xl:hidden"
         >
           {nav.slice(0, 3).map((n) => (
             <Link

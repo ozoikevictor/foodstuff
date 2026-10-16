@@ -1,17 +1,23 @@
 import { queryOptions } from "@tanstack/react-query";
-import {tabHeaders} from "@/lib/test-tab-session";
+import { tabHeaders } from "@/lib/test-tab-session";
 import type { Category, Product, ProductFilters, Recipe, Store } from "@/types";
 import heroImage from "@/assets/hero.jpg";
 export { heroImage };
 export const DELIVERY_FEE = 0;
 export async function request<T = any>(path: string, method = "GET", data?: unknown): Promise<T> {
-  const base = typeof window === "undefined" ? "http://127.0.0.1:3003" : "";
+  const base =
+    typeof window === "undefined" ? process.env["API_ORIGIN"] || "http://127.0.0.1:3003" : "";
   const response = await fetch(`${base}/api${path}`, {
     method,
     credentials: "same-origin",
-    headers: {...tabHeaders(), ...(data === undefined ? {} : { "Content-Type": "application/json" })},
+    headers: {
+      ...tabHeaders(),
+      ...(data === undefined ? {} : { "Content-Type": "application/json" }),
+    },
     ...(data === undefined ? {} : { body: JSON.stringify(data) }),
   });
+  if (!response.headers.get("content-type")?.includes("application/json"))
+    throw new Error("The backend connection is unavailable. Please try again shortly.");
   const result = await response.json();
   if (!response.ok) throw new Error(result.error || "Request failed. Please retry.");
   return result as T;
@@ -49,7 +55,12 @@ export const api = {
 };
 export const q = {
   categories: () =>
-      queryOptions({ queryKey: ["categories"], queryFn: api.getCategories, staleTime: 300000, retry: false }),
+    queryOptions({
+      queryKey: ["categories"],
+      queryFn: api.getCategories,
+      staleTime: 300000,
+      retry: false,
+    }),
   category: (slug: string) =>
     queryOptions({ queryKey: ["category", slug], queryFn: () => api.getCategory(slug) }),
   products: (f: ProductFilters = {}) =>
@@ -70,7 +81,12 @@ export const q = {
   store: (slug: string) =>
     queryOptions({ queryKey: ["store", slug], queryFn: () => api.getStore(slug) }),
   recipes: () =>
-    queryOptions({ queryKey: ["recipes"], queryFn: api.getRecipes, staleTime: 300000, retry: false }),
+    queryOptions({
+      queryKey: ["recipes"],
+      queryFn: api.getRecipes,
+      staleTime: 300000,
+      retry: false,
+    }),
   recipe: (slug: string) =>
     queryOptions({
       queryKey: ["recipe", slug],

@@ -21,6 +21,10 @@ use the generated `.vercel/output` Build Output API files.
 
 Keep `VITE_TAB_SESSION_TEST_MODE=false` in production.
 Firebase credentials and payment secrets belong only on the backend.
-The production backend URL and API proxy must be configured separately before
-shopping, login, or server-rendered product pages can work online; the current
-local API connection is for development.
+Set the server-only `API_ORIGIN` environment variable on Vercel to your Render
+backend origin, for example `https://your-backend.onrender.com` (no `/api` suffix).
+Browser requests use the frontend's `/api` proxy so login cookies stay on the
+frontend domain. On Render, set `APP_ORIGIN` to your exact Vercel frontend origin
+without a trailing slash. Redeploy after changing these values.
+Long-lived order update streams can reconnect when a hosting function times out;
+order data also refreshes periodically.

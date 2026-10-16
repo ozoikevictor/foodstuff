@@ -1,4 +1,4 @@
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { AppShell } from "@/components/shop/AppShell";
 const mocks = vi.hoisted(() => ({ session: vi.fn() }));
@@ -9,7 +9,15 @@ vi.mock("@/hooks/use-marketplace", () => ({
 vi.mock("@/hooks/use-hydrated-store", () => ({ useCartSummary: () => ({ count: 0 }) }));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ to, children, ...props }: any) => (
-    <a href={to} aria-label={props["aria-label"]}>
+    <a
+      href={to}
+      aria-label={props["aria-label"]}
+      role={props.role}
+      ref={props.ref}
+      tabIndex={props.tabIndex}
+      onFocus={props.onFocus}
+      onKeyDown={props.onKeyDown}
+    >
       {children}
     </a>
   ),
@@ -55,4 +63,19 @@ it("does not flash guest footer links while checking the session", () => {
     </AppShell>,
   );
   expect(screen.queryByRole("link", { name: "Log in" })).toBeNull();
+});
+
+it("keeps the account dropdown available when the backend account check fails", () => {
+  mocks.session.mockReturnValue({ data: undefined, isPending: false, isError: true });
+  render(
+    <AppShell>
+      <p>Shop</p>
+    </AppShell>,
+  );
+  fireEvent.keyDown(screen.getByRole("button", { name: "Open account menu" }), { key: "Enter" });
+  expect(screen.getByRole("menuitem", { name: "Log in" }).getAttribute("href")).toBe("/login");
+  expect(screen.getByRole("menuitem", { name: "Create an account" }).getAttribute("href")).toBe(
+    "/signup",
+  );
+  expect(screen.queryByRole("link", { name: "My account" })).toBeNull();
 });
