@@ -1,0 +1,34 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+secrets/
+*-firebase-adminsdk-*.json
+service-account*.json
+*.pem
+*.key
+
+# Dependencies, build output and caches
+node_modules/
+.output/
+.vercel/
+.tanstack/
+.wrangler/
+.nitro/
+.vinxi/
+dist/
+dist-ssr/
+coverage/
+
+# Customer uploads, local databases and logs
+Backend/data/
+*.sqlite
+*.sqlite-*
+*.db
+*.log
+
+# Editor and operating system files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

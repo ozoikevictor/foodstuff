@@ -1,0 +1,32 @@
+{
+  "name": "naijafresh-backend",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env --watch firebase-marketplace-server.mjs",
+    "start": "node --env-file-if-exists=.env firebase-marketplace-server.mjs",
+    "legacy:dev": "node --env-file-if-exists=.env --watch server.mjs",
+    "legacy:start": "node --env-file-if-exists=.env server.mjs",
+    "auth:dev": "node --env-file-if-exists=.env --watch firebase-auth-server.mjs",
+    "auth:start": "node --env-file-if-exists=.env firebase-auth-server.mjs",
+    "firebase:dev": "node --env-file-if-exists=.env --watch firebase-marketplace-server.mjs",
+    "firebase:start": "node --env-file-if-exists=.env firebase-marketplace-server.mjs",
+    "firebase:test:live": "node --env-file-if-exists=.env scripts/test-firestore-marketplace.mjs",
+    "firebase:customers:preview": "node --env-file-if-exists=.env scripts/migrate-firebase-customers.mjs",
+    "firebase:customers:test": "node --env-file-if-exists=.env scripts/test-firebase-user-import.mjs",
+    "firebase:customers:migrate": "node --env-file-if-exists=.env scripts/migrate-firebase-customers.mjs --apply",
+    "auth:check": "node --env-file-if-exists=.env scripts/check-firebase-auth.mjs",
+    "admin:create": "node --env-file-if-exists=.env firebase-bootstrap.mjs",
+    "legacy:admin:create": "node --env-file-if-exists=.env bootstrap.mjs",
+    "db:test": "node --env-file-if-exists=.env scripts/test-firebase.mjs",
+    "db:test:write": "node --env-file-if-exists=.env scripts/test-firebase.mjs --write",
+    "test": "node --test marketplace.test.mjs firebase.test.mjs firebase-auth.test.mjs firestore-marketplace.test.mjs firebase-user-migration.test.mjs perishable.test.mjs tab-sessions.test.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0",
+    "zod": "^3.25.76"
+  }
+}
