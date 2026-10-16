@@ -48,6 +48,10 @@ For payments, configure `PAYSTACK_SECRET_KEY` on the backend only.
 
 ## Uploaded images
 
+The existing public catalogue artwork is bundled under `public/catalogue` and
+serves as a fallback for its original image IDs. It does not require migrating
+local upload files and does not include private customer photos.
+
 Image bytes require persistent storage. Attach a persistent disk and set
 `UPLOADS_PATH` to a directory on that disk. Migrate existing `Backend/data/uploads`
 files to it separately; Git does not include those files. A free service's ephemeral

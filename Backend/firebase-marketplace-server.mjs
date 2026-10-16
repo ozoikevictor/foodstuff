@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { firebaseServices } from "./firebase.mjs";
 import { listenOptions, firebaseStartupMessage } from "./server-config.mjs";
+import { publicArtwork } from "./public-artwork.mjs";
 import {
   createFirebaseAuthService,
   firestoreAuthStore,
@@ -162,7 +163,7 @@ export function createFirebaseMarketplace({
         const upload = await market.get("uploads", parts[2]);
         if (!upload) fail(404, "Image not found.");
         if (upload.private) {
-          const user = await requireUser(req, ["ADMIN", "RIDER"]);
+          const user = await requireUser(req, ["ADMIN", "RIDER", "CUSTOMER"]);
           if (user.role !== "ADMIN" && upload.owner_id !== user.id)
             fail(404, "Image not found.");
         }
@@ -170,7 +171,8 @@ export function createFirebaseMarketplace({
         try {
           bytes = readFileSync(resolve(uploadsDir, upload.id));
         } catch {
-          fail(404, "Image file not found.");
+          bytes = publicArtwork(upload);
+          if (!bytes) fail(404, "Image file not found.");
         }
         res.writeHead(200, {
           "Content-Type": upload.mime,
