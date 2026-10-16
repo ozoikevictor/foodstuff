@@ -1,29 +1,26 @@
-# Welcome to your Lovable project
+# NaijaFresh frontend
 
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+React, TanStack Start, Tailwind CSS, and Nitro.
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Use Node.js 24. Run `npm ci`, then `npm run dev`.
+The local API runs separately from `../Backend` on port 3003.
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
-```
+## Checks
 
-## Built with
+Run `npx tsc --noEmit`, `npm test`, and `npm run build`.
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+## Vercel
+
+Import the GitHub repository and set Root Directory to `Frontend`.
+Choose the TanStack Start framework preset and Node.js 24.
+The checked-in `vercel.json` selects `npm ci` and `npm run build`.
+Remove any manually entered `dist` Output Directory override and let Vercel
+use the generated `.vercel/output` Build Output API files.
+
+Keep `VITE_TAB_SESSION_TEST_MODE=false` in production.
+Firebase credentials and payment secrets belong only on the backend.
+The production backend URL and API proxy must be configured separately before
+shopping, login, or server-rendered product pages can work online; the current
+local API connection is for development.

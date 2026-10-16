@@ -2,7 +2,7 @@
   "name": "tanstack_start_ts",
   "private": true,
   "engines": {
-    "node": ">=24"
+    "node": "24.x"
   },
   "sideEffects": false,
   "type": "module",
@@ -78,7 +78,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
-    "@lovable.dev/vite-tanstack-config": "2.25.3",
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.0.0",
     "@types/node": "^22.16.5",
@@ -97,6 +96,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "8.1.5",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "@tailwindcss/vite": "^4.3.3"
   }
 }

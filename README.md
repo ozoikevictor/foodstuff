@@ -25,10 +25,11 @@ in a separate terminal. Open http://localhost:8080.
 ## Hosting
 
 The frontend and backend are separate applications. Use their respective folders
-as the project roots on your hosting services. Hosting is not configured by this
-repository yet: the frontend currently forwards API requests to the local backend
-on port 3003, and the backend currently listens on localhost. Update those settings
-for the chosen hosting services before deployment.
+as the project roots on your hosting services. The frontend builds for Vercel;
+see [frontend hosting settings](Frontend/README.md). API hosting is still a
+separate step: the frontend currently forwards API requests to the local backend
+on port 3003, and the backend currently listens on localhost. Update the API
+connection and backend network settings before deployment.
 
 Firebase records are stored remotely. Uploaded image files live under
 `Backend/data/uploads/` and are intentionally excluded from Git. Move these files
