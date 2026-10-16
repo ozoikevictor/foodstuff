@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=24"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "node --env-file-if-exists=.env --watch firebase-marketplace-server.mjs",
@@ -23,7 +23,7 @@
     "legacy:admin:create": "node --env-file-if-exists=.env bootstrap.mjs",
     "db:test": "node --env-file-if-exists=.env scripts/test-firebase.mjs",
     "db:test:write": "node --env-file-if-exists=.env scripts/test-firebase.mjs --write",
-    "test": "node --test marketplace.test.mjs firebase.test.mjs firebase-auth.test.mjs firestore-marketplace.test.mjs firebase-user-migration.test.mjs perishable.test.mjs tab-sessions.test.mjs"
+    "test": "node --test marketplace.test.mjs firebase.test.mjs firebase-auth.test.mjs firestore-marketplace.test.mjs firebase-user-migration.test.mjs perishable.test.mjs tab-sessions.test.mjs server-config.test.mjs"
   },
   "dependencies": {
     "firebase-admin": "^13.0.0",

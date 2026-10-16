@@ -1,5 +1,8 @@
 # NaijaFresh Backend
 
+For hosted deployment, follow [Render setup](RENDER_SETUP.md), including Firebase
+Secret Files, environment variables, and persistent image storage.
+
 ## Local Tab Testing
 
 For side-by-side account testing, set Backend `TAB_SESSION_TEST_MODE=true` and Frontend `VITE_TAB_SESSION_TEST_MODE=true`, then restart both servers. This is enabled locally now. Open separate fresh tabs and sign in through the same login page with separate admin/customer accounts. Each tab has a sessionStorage namespace selecting its own HttpOnly cookie; credentials are never stored in browser storage. Cart/wishlist persistence and authenticated event streams follow the same tab. Refresh keeps that tab signed in; logging out affects only that tab. Previously shared logins are not reused: sign in again in each tab.

@@ -5,6 +5,7 @@ import { mkdirSync, writeFileSync, readFileSync, unlinkSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { firebaseServices } from "./firebase.mjs";
+import { listenOptions, firebaseStartupMessage } from "./server-config.mjs";
 import {
   createFirebaseAuthService,
   firestoreAuthStore,
@@ -540,15 +541,17 @@ if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(resolve(process.argv[1])).href
 ) {
-  const { app, db, auth } = firebaseServices();
+  let services;
   let identity;
   try {
-    identity = await firebaseProjectIdentityProvider(app);
+    services = firebaseServices();
+    identity = await firebaseProjectIdentityProvider(services.app);
   } catch (error) {
-    console.error(error.status ? error.message : "Firebase setup failed.");
-    await db.terminate();
+    console.error(firebaseStartupMessage(error));
+    await services?.db.terminate();
     process.exit(1);
   }
+  const { db, auth } = services;
   const authService = createFirebaseAuthService({
     auth,
     store: firestoreAuthStore(db),
@@ -559,10 +562,10 @@ if (
     authService,
     authAdmin: auth,
   });
-  const port = Number(process.env.FIREBASE_MARKETPLACE_PORT || 3003);
-  server.listen(port, "127.0.0.1", () =>
+  const { port, host } = listenOptions();
+  server.listen(port, host, () =>
     console.log(
-      `Firestore marketplace validation API: http://127.0.0.1:${port}. Frontend remains on its existing API.`,
+      `NaijaFresh marketplace API listening on http://${host}:${port}`,
     ),
   );
 }
