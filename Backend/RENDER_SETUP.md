@@ -12,6 +12,12 @@ Service settings:
 
 ## Firebase credentials
 
+Alternatively, set `FIREBASE_SERVICE_ACCOUNT_JSON` to the complete service-account
+JSON as one environment variable. With this method, remove
+`GOOGLE_APPLICATION_CREDENTIALS`; no Secret File is needed. Keep this variable
+private and only on the backend. A generated local `.env.render` file is ignored
+by Git and can be copied into Render's Add from .env option.
+
 In Render's service dashboard, open Environment > Secret Files. Add a file named
 `firebase-service-account.json` containing the service-account JSON for your Firebase
 project. You can use your existing local private JSON file. Do not commit this file
