@@ -7,7 +7,8 @@ import { ProductGrid } from "@/components/shop/ProductCard";
 import { useWishlist } from "@/stores/wishlist";
 import { useMounted } from "@/hooks/use-hydrated-store";
 import { q } from "@/services/api";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { Loading, ErrorState } from "@/components/marketplace/shared";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/wishlist")({
   head: () => ({
@@ -26,7 +27,8 @@ export const Route = createFileRoute("/wishlist")({
 function Wishlist() {
   const ids = useWishlist((s) => s.ids);
   const mounted = useMounted();
-  const products = useSuspenseQuery(q.products()).data;
+  const result = useQuery({ ...q.products(), enabled: mounted && ids.length > 0 });
+  const products = result.data ?? [];
   const items = mounted ? products.filter((p) => ids.includes(p.id)) : [];
   return (
     <AppShell>
@@ -37,10 +39,19 @@ function Wishlist() {
       >
         <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-semibold">
           <Heart className="size-4" />
-          {items.length} saved {items.length === 1 ? "item" : "items"}
+          {mounted ? ids.length : 0} saved {mounted && ids.length === 1 ? "item" : "items"}
         </span>
       </PageIntro>
-      {items.length ? (
+      {!mounted || (ids.length > 0 && result.isPending) ? (
+        <Loading />
+      ) : ids.length > 0 && result.isError ? (
+        <div>
+          <ErrorState error={result.error} />
+          <Button variant="outline" onClick={() => void result.refetch()}>
+            Try again
+          </Button>
+        </div>
+      ) : items.length ? (
         <>
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-bold">Your foodstuff wishlist</h2>

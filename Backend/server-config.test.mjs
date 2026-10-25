@@ -14,3 +14,13 @@ test("Firebase credential errors explain Render secret files without printing pr
   assert.ok(!message.includes("CUSTOMER-SECRET"));
   assert.match(firebaseStartupMessage(new Error("Set FIREBASE_PROJECT_ID")), /FIREBASE_PROJECT_ID/);
 });
+
+test("origin checks normalize configuration and allow only explicitly trusted sites", async () => {
+  const { isAllowedOrigin } = await import('./server-config.mjs');
+  assert.equal(isAllowedOrigin('https://foodstuff-zeta.vercel.app', ' https://foodstuff-zeta.vercel.app/ ', {}), true);
+  assert.equal(isAllowedOrigin('https://shop.example', 'http://localhost:8080', { APP_ORIGINS: 'https://shop.example/, https://other.example' }), true);
+  for (const origin of [undefined, 'null', 'https://evil.example', 'https://shop.example.evil.test', 'https://shop.example/path']) {
+    assert.equal(isAllowedOrigin(origin, 'https://shop.example', {}), false);
+  }
+  assert.equal(isAllowedOrigin('http://localhost:8080', 'https://shop.example', {}), false);
+});

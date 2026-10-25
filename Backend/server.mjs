@@ -1,3 +1,4 @@
+import { isAllowedOrigin } from "./server-config.mjs";
 import { createServer } from "node:http";
 import { randomBytes, createHmac, timingSafeEqual } from "node:crypto";
 import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
@@ -394,7 +395,7 @@ export function createMarketplace({
       const path = url.pathname;
       const method = req.method;
       const mutating = !["GET", "HEAD", "OPTIONS"].includes(method);
-      if (mutating && path !== "/api/payments/webhook" && req.headers.origin !== origin)
+      if (mutating && path !== "/api/payments/webhook" && !isAllowedOrigin(req.headers.origin, origin))
         fail(403, "Request origin not allowed.");
       res.setHeader("X-Content-Type-Options", "nosniff");
       const parts = path.split("/").filter(Boolean);

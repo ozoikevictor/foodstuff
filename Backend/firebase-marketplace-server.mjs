@@ -1,3 +1,4 @@
+import { isAllowedOrigin } from "./server-config.mjs";
 import { createServer } from "node:http";
 import {requestSessionCookie} from "./tab-sessions.mjs";
 import { randomUUID, createHmac, timingSafeEqual } from "node:crypto";
@@ -122,7 +123,7 @@ export function createFirebaseMarketplace({
       if (
         !["GET", "HEAD"].includes(method) &&
         path !== "/api/payments/webhook" &&
-        req.headers.origin !== origin
+        !isAllowedOrigin(req.headers.origin, origin)
       )
         fail(403, "Request origin not allowed.");
       if (path === "/api/health" && method === "GET")

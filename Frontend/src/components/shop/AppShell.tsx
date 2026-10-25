@@ -44,7 +44,7 @@ const nav = [
 
 export function AppShell({
   children,
-  showFooter = false,
+  showFooter = true,
 }: {
   children: ReactNode;
   showFooter?: boolean;
@@ -71,7 +71,7 @@ export function AppShell({
   const categories = useApi<Category[]>("/categories");
   const { data: notifications = [] } = useApi<any[]>("/notifications", !!user);
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
+    <div className="flex min-h-dvh flex-col bg-background pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
       <header className="sticky top-0 z-40 w-full border-b border-border bg-card/95 shadow-sm backdrop-blur">
         <div className="mx-auto flex min-h-24 w-full max-w-[1600px] flex-wrap items-center gap-3 px-4 py-4 md:gap-5 md:px-6 xl:flex-nowrap xl:px-10">
           <Sheet>
@@ -202,8 +202,9 @@ export function AppShell({
                   <span className="hidden xl:inline">My orders</span>
                 </Link>
                 {user && (
-                  <a
-                    href="/notifications"
+                  <Link
+                    to="/notifications"
+                    preload="intent"
                     aria-label={`Notifications, ${notifications.filter((n) => !n.read_at).length} unread`}
                     title="Notifications"
                     className="relative rounded-lg p-2 hover:bg-accent"
@@ -214,10 +215,11 @@ export function AppShell({
                         {notifications.filter((n) => !n.read_at).length}
                       </span>
                     )}
-                  </a>
+                  </Link>
                 )}
                 <Link
                   to="/wishlist"
+                  preload="intent"
                   aria-label="Wishlist"
                   title="Wishlist"
                   className="hidden rounded-lg p-2 hover:bg-accent sm:block"
@@ -274,7 +276,7 @@ export function AppShell({
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/wishlist" className="min-h-11 rounded-xl">
+                      <Link to="/wishlist" preload="intent" className="min-h-11 rounded-xl">
                         <Heart />
                         Wishlist
                       </Link>
@@ -325,9 +327,12 @@ export function AppShell({
           ))}
         </nav>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
       {showFooter && (
-        <footer className="mt-12 border-t border-border bg-primary-deep text-primary-foreground">
+        <footer
+          aria-label="Site footer"
+          className="mt-12 border-t border-border bg-primary-deep text-primary-foreground"
+        >
           <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1.3fr]">
             <div>
               <Link to="/" className="font-display text-2xl font-extrabold">
@@ -347,7 +352,7 @@ export function AppShell({
                   Recipes
                 </Link>
                 {user && (
-                  <Link to="/wishlist" className="hover:text-white">
+                  <Link to="/wishlist" preload="intent" className="hover:text-white">
                     Your wishlist
                   </Link>
                 )}
@@ -401,7 +406,7 @@ export function AppShell({
       )}
       <nav
         aria-label="Mobile navigation"
-        className={`fixed inset-x-0 bottom-0 z-40 grid ${visibleNav.length === 3 ? "grid-cols-3" : "grid-cols-5"} border-t border-border bg-card md:hidden`}
+        className={`fixed inset-x-0 bottom-0 z-40 grid ${visibleNav.length === 3 ? "grid-cols-3" : "grid-cols-5"} border-t border-border bg-card pb-[env(safe-area-inset-bottom)] md:hidden`}
       >
         {visibleNav.map(({ to, label, icon: Icon }) => (
           <Link

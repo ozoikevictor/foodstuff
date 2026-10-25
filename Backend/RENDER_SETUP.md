@@ -64,3 +64,17 @@ startup does not replace the frontend's local API URL automatically.
 References: [Render environment and secret files](https://render.com/docs/configure-environment-variables),
 [Render port binding](https://render.com/docs/web-services),
 [Firebase Admin setup](https://firebase.google.com/docs/admin/setup).
+
+## Fixing "Request origin not allowed"
+
+For the current production frontend, set this in the Render backend Environment:
+
+```dotenv
+APP_ORIGIN=https://foodstuff-zeta.vercel.app
+```
+
+Save and redeploy the backend. APP_ORIGIN is the frontend address, not the Render
+backend address. For another custom domain or preview deployment, explicitly add
+its exact origin to the comma-separated APP_ORIGINS setting. Only add sites you
+control; do not use a wildcard. Local development keeps APP_ORIGIN=http://localhost:8080.
+The frontend proxy preserves the browser Origin header so untrusted sites remain blocked.

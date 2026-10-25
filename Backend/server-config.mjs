@@ -16,3 +16,17 @@ export function firebaseStartupMessage(error) {
     return "Firebase could not be reached. Check network access and retry.";
   return "Firebase setup failed. Check the service-account Secret File, FIREBASE_PROJECT_ID, and Firebase Authentication permissions. No credential values are logged.";
 }
+export function isAllowedOrigin(value, primary, env = process.env) {
+  const normalize = (input) => {
+    try {
+      const url = new URL(input);
+      if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.pathname !== '/' || url.search || url.hash) return null;
+      return url.origin;
+    } catch { return null; }
+  };
+  const requested = normalize(value);
+  if (!requested) return false;
+  const allowed = [primary, ...(env.APP_ORIGINS || '').split(',')]
+    .map(value => normalize(value?.trim())).filter(Boolean);
+  return allowed.includes(requested);
+}

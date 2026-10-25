@@ -1,3 +1,4 @@
+import { isAllowedOrigin } from "./server-config.mjs";
 import { createServer } from "node:http";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
@@ -74,7 +75,7 @@ export function createFirebaseAuthApi({
       const path = new URL(req.url, origin).pathname;
       const method = req.method;
       const sessionCookie = requestSessionCookie(req,origin,tabSessions);
-      if (!["GET", "HEAD"].includes(method) && req.headers.origin !== origin)
+      if (!["GET", "HEAD"].includes(method) && !isAllowedOrigin(req.headers.origin, origin))
         throw authError(403, "Request origin not allowed.");
       if (path === "/api/health" && method === "GET")
         return send(res, 200, {
