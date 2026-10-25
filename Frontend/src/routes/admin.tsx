@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useLocation } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Package,
@@ -52,10 +52,10 @@ const sections = [
 ] as const;
 function Admin() {
   const [section, setSection] = useState("overview");
+  const searchString = useLocation({ select: (location) => location.searchStr });
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("section") === "orders")
-      setSection("orders");
-  }, []);
+    if (new URLSearchParams(searchString).get("section") === "orders") setSection("orders");
+  }, [searchString]);
   const [open, setOpen] = useState(false);
   const { data: notifications = [] } = useApi<any[]>("/notifications");
   return (

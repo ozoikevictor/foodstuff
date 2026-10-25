@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   Bell,
@@ -71,12 +72,8 @@ export function Notifications() {
     const label = dateGroup(item.created_at);
     groups.set(label, [...(groups.get(label) ?? []), item]);
   }
-  const orderBase =
-    user?.role === "ADMIN"
-      ? "/admin?section=orders&"
-      : user?.role === "RIDER"
-        ? "/rider?"
-        : "/orders?";
+  const orderRoute =
+    user?.role === "ADMIN" ? "/admin" : user?.role === "RIDER" ? "/rider" : "/orders";
 
   return (
     <section className="mx-auto max-w-5xl" aria-labelledby="notifications-title">
@@ -250,13 +247,18 @@ export function Notifications() {
                           </time>
                           <div className="mt-3 flex flex-wrap items-center gap-3">
                             {n.order_id && (
-                              <a
-                                href={`${orderBase}order=${encodeURIComponent(n.order_id)}`}
+                              <Link
+                                to={orderRoute}
+                                search={() => ({
+                                  order: n.order_id!,
+                                  ...(user?.role === "ADMIN" ? { section: "orders" } : {}),
+                                })}
+                                preload="intent"
                                 className="inline-flex min-h-10 items-center gap-1 text-xs font-semibold text-primary"
                               >
                                 View order
                                 <ArrowUpRight aria-hidden="true" className="size-3.5" />
-                              </a>
+                              </Link>
                             )}
                             {!n.read_at && (
                               <Action

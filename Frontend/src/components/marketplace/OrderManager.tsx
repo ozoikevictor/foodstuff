@@ -1,14 +1,25 @@
 import { useEffect, useState } from "react";
 import { tabPrivateImage } from "@/lib/test-tab-session";
 import { useQueryClient } from "@tanstack/react-query";
-import { MapPin, Phone, Package, ChevronRight, Navigation } from "lucide-react";
+import {
+  MapPin,
+  Phone,
+  Package,
+  ChevronRight,
+  Navigation,
+  Search,
+  RefreshCw,
+  ReceiptText,
+  Truck,
+} from "lucide-react";
 import { useApi } from "@/hooks/use-marketplace";
 import { useCart } from "@/stores/cart";
 import { request, api } from "@/services/api";
 import { naira } from "@/lib/format";
 import { Action, Status, Loading, ErrorState, Field, fieldClass, ImageUpload } from "./shared";
 import { DeliveryMap } from "./DeliveryMap";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
+import { OrderOverview, orderDate } from "./OrderOverview";
 import { ShoppingEmpty } from "@/components/shop/PageIntro";
 const steps = [
   "Order Placed",
@@ -35,6 +46,7 @@ export function OrderManager({
   const { data: users = [] } = useApi<any[]>("/admin/customers", role === "ADMIN");
   const [selected, setSelected] = useState<string | null>(null);
   const [filter, setFilter] = useState("");
+  const [search, setSearch] = useState("");
   const [gps, setGps] = useState(false);
   const [gpsError, setGpsError] = useState("");
   const [note, setNote] = useState("");
@@ -49,8 +61,9 @@ export function OrderManager({
   });
   const [review, setReview] = useState("");
   const client = useQueryClient();
+  const searchString = useLocation({ select: (location) => location.searchStr });
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(searchString);
     setSelected(params.get("order"));
     const reference = params.get("reference");
     if (reference) {
@@ -62,7 +75,7 @@ export function OrderManager({
         })
         .catch((e) => setGpsError(e.message));
     }
-  }, [client]);
+  }, [client, searchString]);
   const o = result.data?.find((v) => v.id === selected);
   useEffect(() => {
     setGps(false);
@@ -102,23 +115,80 @@ export function OrderManager({
   const action = (name: string, data: any = {}) => request(`/orders/${o.id}/${name}`, "POST", data);
   const navigateLink = (latitude: number, longitude: number) =>
     `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+  const visibleOrders = result.data.filter(
+    (v) =>
+      (!filter || v.status === filter) &&
+      `${v.id} ${v.items.map((item: any) => item.name).join(" ")}`
+        .toLowerCase()
+        .includes(search.trim().toLowerCase()) &&
+      (!deliveryOnly ||
+        !["Order Placed", "Payment Confirmed", "Order Confirmed", "Preparing Your Order"].includes(
+          v.status,
+        )),
+  );
   return (
     <section>
+      {role === "CUSTOMER" && (
+        <div className="mb-6 grid grid-cols-3 gap-3">
+          {[
+            { label: "Total orders", count: result.data.length, icon: ReceiptText },
+            {
+              label: "In progress",
+              count: result.data.filter(
+                (v) => !["Completed", "Cancelled", "Returned"].includes(v.status),
+              ).length,
+              icon: Truck,
+            },
+            {
+              label: "Completed",
+              count: result.data.filter((v) => v.status === "Completed").length,
+              icon: Package,
+            },
+          ].map(({ label, count, icon: Icon }) => (
+            <div key={label} className="rounded-2xl border border-border bg-card p-3 sm:p-5">
+              <Icon className="mb-3 size-5 text-primary" />
+              <p className="text-2xl font-bold">{count}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{label}</p>
+            </div>
+          ))}
+        </div>
+      )}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">
           {deliveryOnly ? "Deliveries" : role === "CUSTOMER" ? "My orders" : "Orders"}
         </h1>
-        <select
-          aria-label="Filter orders"
-          className={`${fieldClass} max-w-xs`}
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-        >
-          <option value="">All statuses</option>
-          {[...steps, "Cancelled", "Delivery Failed", "Returned", "Disputed"].map((s) => (
-            <option key={s}>{s}</option>
-          ))}
-        </select>
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+          <label className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border border-border bg-card px-3">
+            <Search className="size-4 shrink-0 text-muted-foreground" />
+            <input
+              aria-label="Search orders"
+              placeholder="Search order ID or item"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full min-w-0 bg-transparent text-sm outline-none"
+            />
+          </label>
+          <button
+            type="button"
+            aria-label="Refresh orders"
+            disabled={result.isFetching}
+            onClick={() => void result.refetch()}
+            className="grid size-11 place-items-center rounded-xl border border-border bg-card disabled:opacity-50"
+          >
+            <RefreshCw className={`size-4 ${result.isFetching ? "animate-spin" : ""}`} />
+          </button>
+          <select
+            aria-label="Filter orders"
+            className={`${fieldClass} max-w-xs`}
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
+            <option value="">All statuses</option>
+            {[...steps, "Cancelled", "Delivery Failed", "Returned", "Disputed"].map((s) => (
+              <option key={s}>{s}</option>
+            ))}
+          </select>
+        </div>
       </div>
       {gpsError && <ErrorState error={new Error(gpsError)} />}
       {!result.data.length && (
@@ -143,76 +213,84 @@ export function OrderManager({
       )}
       <div className={`grid gap-6 ${o ? "xl:grid-cols-[minmax(280px,1fr)_minmax(0,1.8fr)]" : ""}`}>
         <ul className="space-y-3">
-          {result.data.length > 0 && filter && !result.data.some((v) => v.status === filter) && (
+          {result.data.length > 0 && !visibleOrders.length && (
             <li className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-              No orders with this status. Choose another filter to see more.
+              No matching orders. Try another search or status filter.
             </li>
           )}
-          {result.data
-            .filter(
-              (v) =>
-                (!filter || v.status === filter) &&
-                (!deliveryOnly ||
-                  ![
-                    "Order Placed",
-                    "Payment Confirmed",
-                    "Order Confirmed",
-                    "Preparing Your Order",
-                  ].includes(v.status)),
-            )
-            .map((v) => (
-              <li key={v.id}>
-                <button
-                  aria-pressed={selected === v.id}
-                  className={`flex w-full flex-wrap items-start gap-3 rounded-2xl border p-4 text-left transition sm:flex-nowrap sm:p-5 ${selected === v.id ? "border-primary/40 bg-accent/60 shadow-sm" : "border-border bg-card hover:border-primary/30 hover:shadow-sm"}`}
-                  onClick={() => {
-                    setSelected(v.id);
-                    window.history.replaceState(
-                      null,
-                      "",
-                      `${window.location.pathname}?order=${v.id}`,
-                    );
-                  }}
-                >
-                  <img
-                    src={v.items[0]?.image}
-                    alt=""
-                    className="size-14 rounded-xl bg-accent object-cover"
-                  />
-                  <div className="min-w-0 flex-1 basis-1/2">
-                    <p className="break-all text-sm font-semibold">{v.id}</p>
-                    <p className="my-1 text-xs text-muted-foreground">{v.created_at} UTC</p>
-                    <p className="mb-2 text-xs text-muted-foreground">
-                      {v.items.length} {v.items.length === 1 ? "foodstuff item" : "foodstuff items"}
-                    </p>
-                    <Status value={v.status} />
-                  </div>
-                  <span className="text-sm font-bold">{naira(v.total)}</span>
-                  <ChevronRight className="size-4 shrink-0" />
-                </button>
-              </li>
-            ))}
+          {visibleOrders.map((v) => (
+            <li key={v.id}>
+              <button
+                aria-pressed={selected === v.id}
+                className={`flex w-full flex-wrap items-start gap-3 rounded-2xl border p-4 text-left transition sm:flex-nowrap sm:p-5 ${selected === v.id ? "border-primary/40 bg-accent/60 shadow-sm" : "border-border bg-card hover:border-primary/30 hover:shadow-sm"}`}
+                onClick={() => {
+                  setSelected(v.id);
+                  window.history.replaceState(
+                    null,
+                    "",
+                    `${window.location.pathname}?order=${v.id}`,
+                  );
+                }}
+              >
+                <img
+                  src={v.items[0]?.image}
+                  alt=""
+                  className="size-14 shrink-0 rounded-xl bg-accent object-cover"
+                />
+                <div className="min-w-0 flex-1 basis-1/2">
+                  <p className="break-all text-sm font-semibold">{v.id}</p>
+                  <p className="my-1 text-xs text-muted-foreground">{orderDate(v.created_at)}</p>
+                  <p className="mb-2 text-xs text-muted-foreground">
+                    {v.items.length} {v.items.length === 1 ? "foodstuff item" : "foodstuff items"}
+                  </p>
+                  <Status value={v.status} />
+                </div>
+                <span className="text-sm font-bold">{naira(v.total)}</span>
+                <ChevronRight className="mt-1 size-4 shrink-0 text-muted-foreground" />
+              </button>
+            </li>
+          ))}
         </ul>
         {o && (
           <div className="min-w-0 rounded-2xl border border-border bg-card p-5 md:p-6">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="break-all text-lg font-bold">{o.id}</h2>
+              <div>
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Order details
+                </p>
+                <h2 className="break-all text-lg font-bold">{o.id}</h2>
+              </div>
               <Status value={o.payment_status} />
             </div>
+            <OrderOverview order={o} />
+            <h3 className="mb-2 flex items-center gap-2 text-sm font-bold">
+              <ReceiptText className="size-4 text-primary" />
+              Items in your order
+            </h3>
             <ul className="divide-y divide-border">
               {o.items.map((i: any) => (
                 <li key={i.id} className="flex items-center gap-3 py-3">
-                  <img src={i.image} alt="" className="size-12 rounded-md object-cover" />
+                  <img
+                    src={i.image}
+                    alt=""
+                    className="size-12 shrink-0 rounded-xl bg-muted object-cover"
+                  />
                   <div className="min-w-0 flex-1 text-sm">
-                    <p className="font-semibold">{i.name}</p>
+                    <p className="break-words font-semibold">{i.name}</p>
                     <p className="text-muted-foreground">
                       {i.qty} x {i.label}
                     </p>
                   </div>
-                  <strong className="text-sm">{naira(i.price * i.qty)}</strong>
+                  <strong className="shrink-0 text-sm">{naira(i.price * i.qty)}</strong>
                 </li>
               ))}
             </ul>
+            <div className="mt-4 flex justify-between border-t border-dashed border-border pt-4 text-sm">
+              <span>Items subtotal</span>
+              <span>
+                {naira(o.items.reduce((sum: number, item: any) => sum + item.price * item.qty, 0))}
+              </span>
+            </div>
             <div className="mt-3 flex justify-between text-sm">
               <span>Delivery</span>
               <span>{naira(o.delivery_fee)}</span>
@@ -221,21 +299,27 @@ export function OrderManager({
               <span>Total</span>
               <span>{naira(o.total)}</span>
             </div>
-            <p className="mt-5 flex gap-2 text-sm">
-              <MapPin className="size-4 shrink-0" />
-              {o.address}
-            </p>
-            <p className="mt-2 text-sm">{o.phone}</p>
-            {o.delivery_preference && o.delivery_preference !== "standard" && (
-              <p className="mt-2 text-sm text-muted-foreground">
-                Requested delivery:{" "}
-                {o.delivery_preference === "within-1-hour" ? "within 1 hour" : "within 2 hours"} of
-                ordering (subject to confirmation).
+            <div className="mt-6 rounded-2xl border border-border bg-muted/30 p-4">
+              <h3 className="mb-3 text-sm font-bold">Delivery information</h3>
+              <p className="flex gap-2 break-words text-sm leading-6">
+                <MapPin className="size-4 shrink-0" />
+                {o.address}
               </p>
-            )}
-            {o.instructions && (
-              <p className="mt-2 text-sm text-muted-foreground">{o.instructions}</p>
-            )}
+              <p className="mt-3 flex items-center gap-2 text-sm">
+                <Phone className="size-4 text-muted-foreground" />
+                {o.phone}
+              </p>
+              {o.delivery_preference && o.delivery_preference !== "standard" && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Requested delivery:{" "}
+                  {o.delivery_preference === "within-1-hour" ? "within 1 hour" : "within 2 hours"}{" "}
+                  of ordering (subject to confirmation).
+                </p>
+              )}
+              {o.instructions && (
+                <p className="mt-2 text-sm text-muted-foreground">{o.instructions}</p>
+              )}
+            </div>
             <div className="my-6 flex flex-wrap gap-2">
               {role === "CUSTOMER" &&
                 o.payment_status === "pending" &&
@@ -266,7 +350,17 @@ export function OrderManager({
                   </>
                 )}
               {role !== "RIDER" && ["Order Placed", "Payment Confirmed"].includes(o.status) && (
-                <Action label="Cancel order" onClick={() => action("cancel")} />
+                <Action
+                  label="Cancel order"
+                  onClick={async () => {
+                    if (
+                      window.confirm(
+                        "Cancel this order? If payment was already made, refund handling may require support.",
+                      )
+                    )
+                      await action("cancel");
+                  }}
+                />
               )}
               {role === "ADMIN" &&
                 ["Payment Confirmed", "Order Confirmed", "Preparing Your Order"].includes(
@@ -487,7 +581,7 @@ export function OrderManager({
                     />
                   </a>
                 )}
-                <p className="mt-2 text-xs">{o.evidence.created_at} UTC</p>
+                <p className="mt-2 text-xs">{orderDate(o.evidence.created_at)}</p>
                 {o.confirmations.map((c: any) => (
                   <p key={c.kind} className="mt-2 text-sm">
                     {c.kind.replaceAll("_", " ")}: {c.created_at} UTC
@@ -612,11 +706,15 @@ export function OrderManager({
                 </div>
               )}
             <h3 className="mb-3 mt-7 font-bold">Order progress</h3>
-            <ol className="space-y-3 border-l border-border pl-4">
+            <ol className="space-y-5 border-l-2 border-primary/15 pl-5">
               {o.events.map((e: any, i: number) => (
-                <li key={i} className="text-sm">
+                <li key={i} className="relative text-sm">
+                  <span
+                    aria-hidden="true"
+                    className="absolute -left-[27px] top-1 size-3 rounded-full border-2 border-card bg-primary"
+                  />
                   <p className="font-semibold">{e.status}</p>
-                  <p className="text-xs text-muted-foreground">{e.created_at} UTC</p>
+                  <p className="text-xs text-muted-foreground">{orderDate(e.created_at)}</p>
                   {e.note && <p className="mt-1 text-xs">{e.note}</p>}
                 </li>
               ))}
