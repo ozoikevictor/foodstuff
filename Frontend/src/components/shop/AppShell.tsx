@@ -73,14 +73,14 @@ export function AppShell({
   return (
     <div className="flex min-h-dvh flex-col bg-background pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
       <header className="sticky top-0 z-40 w-full border-b border-border bg-card/95 shadow-sm backdrop-blur">
-        <div className="mx-auto flex min-h-24 w-full max-w-[1600px] flex-wrap items-center gap-3 px-4 py-4 md:gap-5 md:px-6 xl:flex-nowrap xl:px-10">
+        <div className="mx-auto grid w-full max-w-[1600px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-1 gap-y-2 px-3 py-2 sm:flex sm:min-h-24 sm:flex-wrap sm:gap-3 sm:px-4 sm:py-4 md:gap-5 md:px-6 xl:flex-nowrap xl:px-10">
           <Sheet>
             <SheetTrigger asChild>
               <button
                 type="button"
                 aria-label="Open menu"
                 title="Open menu"
-                className="grid size-9 shrink-0 place-items-center rounded-md hover:bg-accent"
+                className="grid size-10 shrink-0 place-items-center rounded-xl hover:bg-accent"
               >
                 <Menu className="size-5" />
               </button>
@@ -149,7 +149,7 @@ export function AppShell({
           <Link
             to="/"
             aria-label="NaijaFresh home"
-            className="shrink-0 font-display text-2xl font-extrabold text-primary-deep md:text-3xl"
+            className="min-w-0 whitespace-nowrap font-display text-xl font-extrabold tracking-tight text-primary-deep sm:shrink-0 sm:text-2xl md:text-3xl"
           >
             Naija<span className="text-hot">Fresh</span>
           </Link>
@@ -172,31 +172,31 @@ export function AppShell({
           <form
             action="/shop"
             role="search"
-            className="order-last flex min-w-0 basis-full items-center gap-2 rounded-2xl border border-border bg-background px-4 xl:order-none xl:ml-auto xl:max-w-xl xl:flex-1 xl:basis-auto"
+            className="order-last col-span-3 flex w-full min-w-0 items-center gap-2 rounded-2xl border border-border bg-background px-3 sm:basis-full sm:px-4 xl:order-none xl:ml-auto xl:max-w-xl xl:flex-1 xl:basis-auto"
           >
             <input
               name="q"
               aria-label="Search products"
               placeholder="Search fresh foodstuff"
-              className="h-12 w-full min-w-0 bg-transparent text-sm outline-none"
+              className="h-10 w-full min-w-0 bg-transparent text-sm outline-none sm:h-12"
             />
             <button
               type="submit"
               aria-label="Search products"
               title="Search products"
-              className="shrink-0 rounded-md px-2 py-1 text-sm font-semibold text-primary hover:bg-accent"
+              className="min-h-10 shrink-0 rounded-xl px-2 text-xs font-semibold text-primary hover:bg-accent sm:text-sm"
             >
               Search
             </button>
           </form>
-          <div className="ml-auto flex items-center gap-0 md:gap-2">
+          <div className="col-start-3 row-start-1 ml-auto flex shrink-0 items-center gap-0 md:gap-2">
             {user ? (
               <>
                 <Link
                   to="/orders"
                   aria-label="My orders"
                   title="My orders"
-                  className="flex shrink-0 items-center gap-1.5 rounded-md p-2 text-sm font-semibold hover:bg-accent"
+                  className="hidden shrink-0 items-center gap-1.5 rounded-md p-2 text-sm font-semibold hover:bg-accent sm:flex"
                 >
                   <Package className="size-5" />
                   <span className="hidden xl:inline">My orders</span>
@@ -207,11 +207,11 @@ export function AppShell({
                     preload="intent"
                     aria-label={`Notifications, ${notifications.filter((n) => !n.read_at).length} unread`}
                     title="Notifications"
-                    className="relative rounded-lg p-2 hover:bg-accent"
+                    className="relative grid size-10 place-items-center rounded-xl hover:bg-accent md:size-auto md:p-2"
                   >
                     <Bell className="size-5" />
                     {notifications.some((n) => !n.read_at) && (
-                      <span className="absolute -right-1 -top-1 grid min-w-4 place-items-center rounded-full bg-hot px-1 text-[9px] font-bold text-white">
+                      <span className="absolute right-0 top-0 grid min-w-4 place-items-center rounded-full bg-hot px-1 text-[9px] font-bold text-white">
                         {notifications.filter((n) => !n.read_at).length}
                       </span>
                     )}
@@ -230,7 +230,7 @@ export function AppShell({
                   to="/cart"
                   aria-label={`Cart, ${count} items`}
                   title="Your basket"
-                  className="relative block rounded-lg bg-accent p-2.5 text-primary"
+                  className="relative grid size-10 place-items-center rounded-xl bg-accent text-primary md:size-auto md:p-2.5"
                 >
                   <ShoppingBasket className="size-5" />
                   {count > 0 && (
@@ -246,14 +246,14 @@ export function AppShell({
                 <button
                   type="button"
                   aria-label="Open account menu"
-                  className="ml-2 inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-primary/15 bg-accent/60 px-3 text-primary outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary"
+                  className="ml-1 inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-primary/15 bg-accent/60 text-primary outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary md:ml-2 md:h-11 md:w-auto md:gap-2 md:px-3"
                 >
                   {session.isPending ? (
                     <LoaderCircle aria-hidden="true" className="size-5 animate-spin" />
                   ) : (
                     <User aria-hidden="true" className="size-5" />
                   )}
-                  <ChevronDown aria-hidden="true" className="size-4" />
+                  <ChevronDown aria-hidden="true" className="hidden size-4 md:block" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" sideOffset={10} className="w-60 rounded-2xl p-2">
